@@ -91,7 +91,7 @@ const userController={
         }),
 
     profile:asyncHandler(async (req, res) => {
-        const { username, password, location, emergencyContacts } = req.body;
+        const { username, password, emergencyContacts } = req.body;
         const { userId } = req.user.id; 
         const user = await User.findOne({id:userId});
         if (!user) {
@@ -103,7 +103,6 @@ const userController={
         }            
         user.username = username || user.username;
         user.password = hashed_password;
-        user.location = location || user.location;
         user.emergencyContacts = emergencyContacts || user.emergencyContacts;            
         const updatedUser = await user.save();            
         if(!updatedUser){
@@ -111,6 +110,21 @@ const userController={
         }
         res.send(user);
      }),
-        
+    getLocation:asyncHandler(async (req, res) => {
+        const { latitude, longitude } = req.body;
+        const user = await User.findOne({_id:req.user.id});
+        if (!user) {
+            res.send('User not found');
+        }
+        user.location = {
+            latitude: latitude,
+            longitude: longitude
+        };
+        await user.save();
+        res.send({
+            message: 'Location updated successfully',
+            location: user.location
+        });
+    })
 }
 module.exports=userController

@@ -7,5 +7,6 @@ userRoutes.post("/register", userController.register);
 userRoutes.post("/login", userController.login);
 userRoutes.put("/edit", userAuthentication,userController.profile);
 userRoutes.delete("/logout", userController.logout);
+userRoutes.post("/location", userAuthentication,userController.getLocation);
 
 module.exports = userRoutes;

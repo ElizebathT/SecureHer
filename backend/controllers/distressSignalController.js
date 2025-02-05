@@ -7,7 +7,7 @@ const distressSignalController={
         const { location } = req.body;
         const userId=req.user.id
         const user = await User.findById(userId);
-        if (!user) res.send('User not found');
+        if (!user) throw new Error('User not found');
             
         const distressSignal = new DistressSignal({
                 userId,
@@ -15,7 +15,7 @@ const distressSignalController={
         });
         const complete=await distressSignal.save();
         if(!complete){
-            res.send({ message: 'Server error', error });
+            throw new Error('Error in creating signal');
         }
             res.send({ message: 'Distress signal sent', distressSignal });
         
@@ -24,7 +24,7 @@ const distressSignalController={
         const  userId = req.user.id;
         const signals = await DistressSignal.find({ userId });
         if(!signals){
-            res.send("No signals found!")
+            throw new Error("No signals found!")
         }
         res.send(signals);
     }),
@@ -32,7 +32,7 @@ const distressSignalController={
     resolveDistressSignal: asyncHandler(async (req, res) => {
             const { id } = req.body;
             const updatedSignal = await DistressSignal.findByIdAndUpdate(id, { status: 'resolved' }, { new: true });
-            if (!updatedSignal) res.send('Distress signal not found' );
+            if (!updatedSignal) throw new Error('Distress signal not found' );
             res.send({ message: 'Distress signal resolved', updatedSignal });
             
         
