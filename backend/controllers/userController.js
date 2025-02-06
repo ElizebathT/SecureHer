@@ -67,7 +67,7 @@ const userController={
         if(!userExist){
             throw new Error("User not found")
         }
-        const passwordMatch= bcrypt.compare(userExist.password,password)
+        const passwordMatch=await bcrypt.compare(password,userExist.password)
         if(!passwordMatch){
             throw new Error("Passwords not matching")
         }
@@ -85,15 +85,27 @@ const userController={
         res.send("Login successful")
         }),
 
+    getUserProfile : asyncHandler(async (req, res) => {
+            const userId = req.user.id;         
+            const user = await User.findById(userId).select("-password"); 
+            if (!user) {
+                throw new Error("User not found");
+            }        
+            res.send({
+                message: "User details retrieved successfully",
+                user
+            });
+        }),
+
     logout:asyncHandler(async(req,res)=>{
         res.clearCookie("token")
         res.send("User logged out")
         }),
 
     profile:asyncHandler(async (req, res) => {
-        const { username, password, emergencyContacts } = req.body;
-        const { userId } = req.user.id; 
-        const user = await User.findOne({id:userId});
+        const { username, password, emergencyContacts,phone } = req.body;
+        const userId = req.user.id; 
+        const user = await User.findOne({_id:userId});
         if (!user) {
             throw new Error("User not found");
         }       
@@ -103,14 +115,15 @@ const userController={
         }            
         user.username = username || user.username;
         user.password = hashed_password;
-        user.emergencyContacts = emergencyContacts || user.emergencyContacts;            
+        user.emergencyContacts = emergencyContacts || user.emergencyContacts;  
+        user.phone = phone || user.phone;            
         const updatedUser = await user.save();            
         if(!updatedUser){
             res.send('Error in updating')
         }
         res.send(user);
      }),
-    getLocation:asyncHandler(async (req, res) => {
+    updateLocation:asyncHandler(async (req, res) => {
         const { latitude, longitude } = req.body;
         const user = await User.findOne({_id:req.user.id});
         if (!user) {
@@ -125,6 +138,24 @@ const userController={
             message: 'Location updated successfully',
             location: user.location
         });
+    }),
+    getLocation:asyncHandler(async (req, res) => {
+        const { email } = req.body; 
+        const user = await User.findOne({_id:req.user.id});
+
+        const requestingUser = await User.findOne({email});
+
+        if (!requestingUser) {
+            throw new Error("Requesting user not found");
+        }
+
+        // Check if requesting user is in the emergencyContacts list of the target user
+        if (!user.emergencyContacts.includes(requestingUser.phone)) {
+            throw new Error("You are not authorized to view this user's location" );
+        }
+
+        // Return the location of the user
+        res.send({ location: user.location });
     })
 }
 module.exports=userController

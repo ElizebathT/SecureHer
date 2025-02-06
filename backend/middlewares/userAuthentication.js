@@ -2,8 +2,7 @@ const express=require("express")
 const jwt=require("jsonwebtoken")
 require("dotenv").config()
 
-const userAuthentication=(req,res,next)=>{
-    
+const userAuthentication=(req,res,next)=>{   
     
     const {token} =req.cookies
     if(!token){

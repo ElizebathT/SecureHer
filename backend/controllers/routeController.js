@@ -1,5 +1,7 @@
 const asyncHandler=require("express-async-handler");
 const User = require("../models/userModel");
+const Report = require("../models/reportingModel");
+const DistressSignal = require("../models/distressSignalModel");
 
 const routeController={
     getRouteWithMostUsersNearby :asyncHandler(async (req, res) => {
@@ -22,6 +24,23 @@ const routeController={
         const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
     
         res.json({ googleMapsUrl, userLocations });
+    }),
+    
+    getAllDistressSignalLocations:asyncHandler(async (req, res) => {
+        const distressSignals = await DistressSignal.find({}, "location");
+        const reports = await Report.find({}, "location");
+    
+        // Combine locations from both distress signals and reports
+        const allLocations = [
+          ...distressSignals.map(signal => signal.location),
+          ...reports.map(report => report.location)
+        ];
+    
+        // Return the unique locations
+        const uniqueLocations = [...new Set(allLocations.map(JSON.stringify))].map(JSON.parse);
+        res.send({
+          locations: uniqueLocations,
+        });
     })
 }
 module.exports=routeController

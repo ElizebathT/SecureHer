@@ -16,6 +16,7 @@ const app = express();
 connectDB()
 
 app.use(express.json());
+app.use(cookieParser())
 app.use(
     session({
         secret:"secret",
@@ -38,7 +39,7 @@ passport.use(
 );
 passport.serializeUser((user,done)=>done(null,user))
 passport.deserializeUser((user,done)=>done(null,user))
-app.use(cookieParser())
+
 
 app.use(router)
 app.use(cors());
