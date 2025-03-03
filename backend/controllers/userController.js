@@ -2,10 +2,77 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const asyncHandler=require("express-async-handler")
-const express=require('express')
+const crypto = require("crypto");
+const nodemailer = require("nodemailer");
+
 const userController={
+    forgotPassword: asyncHandler(async (req, res) => {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+    
+        if (!user) {
+            throw new Error("User not found");
+        }
+    
+        // Generate a password reset token
+        const resetToken = crypto.randomBytes(32).toString("hex");
+        const resetTokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+    
+        // Set token and expiration
+        user.resetPasswordToken = resetTokenHash;
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour expiration
+        await user.save();
+    
+        // Construct reset link (Frontend URL should handle token submission)
+        const resetLink = `http://yourfrontend.com/reset-password/${resetToken}`;
+    
+        // Configure Nodemailer
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
+            },
+        });
+    
+        // Send email
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: "Password Reset Request",
+            text: `You requested a password reset. Click the link to reset your password: ${resetLink}`,
+        };
+    
+        await transporter.sendMail(mailOptions);
+    
+        res.send({ message: "Password reset link sent to email" });
+    }),
+    
+   resetPassword : asyncHandler(async (req, res) => {
+        const { token, newPassword } = req.body;
+    
+        // Hash the token to match the stored hash
+        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+        const user = await User.findOne({
+            resetPasswordToken: tokenHash,
+            resetPasswordExpires: { $gt: Date.now() },
+        });
+    
+        if (!user) {
+            throw new Error("Invalid or expired token");
+        }
+    
+        // Hash new password and update user
+        user.password = await bcrypt.hash(newPassword, 10);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+    
+        res.send({ message: "Password reset successfully" });
+    }),
+
     register : asyncHandler(async(req,res)=>{        
-        const { username, email, password, emergencyContacts } = req.body;
+        const { username, email, password, emergencyContacts, phone } = req.body;
         const userExits=await User.findOne({username})
         if(userExits){
             throw new Error("User already exists")
@@ -14,6 +81,7 @@ const userController={
         const userCreated=await User.create({
             username,
             email,
+            phone,
             password:hashed_password,
             emergencyContacts
         })

@@ -10,5 +10,7 @@ userRoutes.delete("/logout", userController.logout);
 userRoutes.post("/location", userAuthentication,userController.updateLocation);
 userRoutes.get("/view", userAuthentication,userController.getUserProfile);
 userRoutes.get("/find", userAuthentication,userController.getLocation);
+userRoutes.get("/forgot", userController.forgotPassword);
+userRoutes.put("/reset", userController.resetPassword);
 
 module.exports = userRoutes;
