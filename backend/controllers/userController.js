@@ -93,13 +93,7 @@ const userController={
             id:userCreated.id
         }
         const token=jwt.sign(payload,process.env.JWT_SECRET_KEY)
-        res.cookie("token",token,{
-            maxAge:2*24*60*60*1000,
-            http:true,
-            sameSite:"none",
-            secure:false
-        })
-        res.send("User created successfully")
+        res.json({token,role})
     }),
 
     googleRegister : asyncHandler(async(req,res)=>{        
@@ -144,13 +138,8 @@ const userController={
             id:userExist.id
         }
         const token=jwt.sign(payload,process.env.JWT_SECRET_KEY)
-        res.cookie("token",token,{
-            maxAge:2*24*60*60*1000,
-            sameSite:"none",
-            http:true,
-            secure:false
-        })        
-        res.send("Login successful")
+        const role=userExist.role
+        res.json({token,role})
         }),
 
     getUserProfile : asyncHandler(async (req, res) => {
@@ -224,6 +213,40 @@ const userController={
 
         // Return the location of the user
         res.send({ location: user.location });
+    }),
+    changePassword: asyncHandler(async (req, res) => {
+        const userId = req.user.id;
+        const { oldPassword, newPassword } = req.body;
+    
+        // Validate input
+        if (!oldPassword || !newPassword) {
+            res.status(400);
+            throw new Error("Both old and new passwords are required");
+        }
+    
+        const user = await User.findById(userId);
+        if (!user) {
+            res.status(404);
+            throw new Error("User not found");
+        }
+    
+        // Check if old password matches
+        const isMatch = await bcrypt.compare(oldPassword, user.password);
+        if (!isMatch) {
+            res.status(401);
+            throw new Error("Incorrect old password");
+        }
+    
+        // Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+    
+        // Save the updated user
+        await user.save();
+    
+        res.send({
+            message: "Password changed successfully",
+        });
     })
 }
 module.exports=userController

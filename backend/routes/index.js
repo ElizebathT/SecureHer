@@ -7,6 +7,7 @@ const resourcesRouter = require("./resourcesRouter");
 const reportingRouter = require("./reportingRouter");
 const routeRouter = require("./routeRouter");
 const supportRouter = require("./supportRoutes");
+const notificationRouter = require("./notificationRoutes");
 const router=express()
 
 router.use("/users", userRoutes);
@@ -15,6 +16,7 @@ router.use("/resources", resourcesRouter);
 router.use("/reports", reportingRouter);
 router.use("/route", routeRouter);
 router.use("/support", supportRouter);
+router.use("/notification", notificationRouter);
 router.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
 router.get("/auth/google/callback",passport.authenticate("google", { failureRedirect: "/" }),userController.googleRegister);
  

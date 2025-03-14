@@ -14,6 +14,12 @@ const session=require('express-session')
 const app = express();
 
 connectDB()
+const allowedOrigins = ["http://localhost:5173"];
+
+app.use(cors({
+    origin: allowedOrigins, 
+    credentials: true, 
+}));
 
 app.use(express.json());
 app.use(cookieParser())
@@ -42,7 +48,6 @@ passport.deserializeUser((user,done)=>done(null,user))
 
 
 app.use(router)
-app.use(cors());
 app.use(errorHandler)
 
 
