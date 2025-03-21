@@ -21,6 +21,10 @@ location:{
   password: { 
     type: String
 },
+verified:{
+  type:Boolean,
+  default:false
+},
   emergencyContacts: [
     { 
         type: String 

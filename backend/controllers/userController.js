@@ -133,6 +133,9 @@ const userController={
         if(!passwordMatch){
             throw new Error("Passwords not matching")
         }
+        if (!userExist.verified) {
+            throw new Error("Please verify your email before logging in");
+        }
         const payload={
             email:userExist.email,
             id:userExist.id
