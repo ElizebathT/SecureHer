@@ -8,9 +8,11 @@ const reportingRouter = require("./reportingRouter");
 const routeRouter = require("./routeRouter");
 const supportRouter = require("./supportRoutes");
 const notificationRouter = require("./notificationRoutes");
+const adminRouter = require("./adminRoutes");
 const router=express()
 
 router.use("/users", userRoutes);
+router.use("/admin", adminRouter);
 router.use("/signal", distressSignalRouter);
 router.use("/resources", resourcesRouter);
 router.use("/reports", reportingRouter);

@@ -7,5 +7,6 @@ const adminRouter = express.Router();
 
 adminRouter.get("/get", userAuthentication,adminAuthentication, adminController.getDashboardData);
 adminRouter.put("/verify", userAuthentication,adminAuthentication, adminController.verifyUser);
+adminRouter.get("/support", userAuthentication,adminAuthentication, adminController.viewallSupport);
 
 module.exports = adminRouter;

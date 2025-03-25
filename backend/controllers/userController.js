@@ -163,7 +163,7 @@ const userController={
         }),
 
     profile:asyncHandler(async (req, res) => {
-        const { username, password, emergencyContacts,phone } = req.body;
+        const { username, password, phone } = req.body;
         const userId = req.user.id; 
         const user = await User.findOne({_id:userId});
         if (!user) {
@@ -175,7 +175,6 @@ const userController={
         }            
         user.username = username || user.username;
         user.password = hashed_password;
-        user.emergencyContacts = emergencyContacts || user.emergencyContacts;  
         user.phone = phone || user.phone;            
         const updatedUser = await user.save();            
         if(!updatedUser){
@@ -183,6 +182,34 @@ const userController={
         }
         res.send(user);
      }),
+
+     emergencyContacts:asyncHandler(async (req, res) => {
+        const { emergencyContacts } = req.body;
+        const userId = req.user.id; 
+        const user = await User.findOne({_id:userId});
+        if (!user) {
+            throw new Error("User not found");
+        }       
+              
+        user.emergencyContacts = emergencyContacts || user.emergencyContacts;
+                
+        const updatedUser = await user.save();            
+        if(!updatedUser){
+            res.send('Error in updating')
+        }
+        res.send(user);
+     }),
+
+     view_emergency: asyncHandler(async (req, res) => {
+        const userId = req.user.id; 
+        const user = await User.findById(userId).select("emergencyContacts");
+    
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }       
+        res.json(user.emergencyContacts);
+    }), 
+
     updateLocation:asyncHandler(async (req, res) => {
         const { latitude, longitude } = req.body;
         const user = await User.findOne({_id:req.user.id});
