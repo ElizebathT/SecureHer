@@ -27,7 +27,7 @@ const supportController={
         const allUsers = await User.find({ _id: { $ne: currentUser.id } });
 
         const nearbyUsers = allUsers.filter(user => {
-            if (user.location && user.location.latitude && user.location.longitude) {
+            if (user.username !== "Admin" && user.location && user.location.latitude && user.location.longitude) {
                 const distance = getDistance(
                     currentUser.location.latitude,
                     currentUser.location.longitude,
@@ -38,6 +38,7 @@ const supportController={
             }
             return false;
         });
+        
         if (nearbyUsers.length === 0) {
             res.send("No nearby users found.");
         }

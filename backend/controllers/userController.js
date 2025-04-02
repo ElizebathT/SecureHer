@@ -220,12 +220,14 @@ const userController={
             latitude: latitude,
             longitude: longitude
         };
+        user.time = new Date();
         await user.save();
         res.send({
             message: 'Location updated successfully',
             location: user.location
         });
     }),
+    
     getLocation:asyncHandler(async (req, res) => {
         const { email } = req.body; 
         const user = await User.findOne({_id:req.user.id});
